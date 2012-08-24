@@ -61,7 +61,8 @@ get_statistics(Values) when length(Values) < ?STATS_MIN ->
        {999, 0.0}
       ]
      },
-     {histogram, [{0, 0}]}
+     {histogram, [{0, 0}]},
+     {n, 0}
      ];
 get_statistics(Values) ->
     Scan_res = scan_values(Values),
@@ -87,7 +88,8 @@ get_statistics(Values) ->
        {999, percentile(SortedValues, Scan_res, 0.999)}
       ]
      },
-     {histogram, get_histogram(Values, Scan_res, Scan_res2)}
+     {histogram, get_histogram(Values, Scan_res, Scan_res2)},
+     {n, Scan_res#scan_result.n}
      ].
 
 get_statistics(Values, _) when length(Values) < ?STATS_MIN ->
