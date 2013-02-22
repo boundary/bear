@@ -55,7 +55,9 @@ get_statistics(Values) when length(Values) < ?STATS_MIN ->
      {kurtosis, 0.0},
      {percentile,
       [
+       {50, 0.0},
        {75, 0.0},
+       {90, 0.0},
        {95, 0.0},
        {99, 0.0},
        {999, 0.0}
@@ -82,7 +84,9 @@ get_statistics(Values) ->
      {kurtosis, kurtosis(Scan_res, Scan_res2)},
      {percentile,
       [
+       {50, percentile(SortedValues, Scan_res, 0.50)},
        {75, percentile(SortedValues, Scan_res, 0.75)},
+       {90, percentile(SortedValues, Scan_res, 0.90)},
        {95, percentile(SortedValues, Scan_res, 0.95)},
        {99, percentile(SortedValues, Scan_res, 0.99)},
        {999, percentile(SortedValues, Scan_res, 0.999)}
