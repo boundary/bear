@@ -317,12 +317,16 @@ foldl2(_F, Acc, [], []) ->
 %% wrapper for math:log/1 to avoid dividing by zero
 math_log(0) ->
     1;
+math_log(0.0) ->
+    1.0;
 math_log(X) ->
     math:log(X).
 
 %% wrapper for calculating inverse to avoid dividing by zero
 inverse(0) ->
     0;
+inverse(0.0) ->
+    0.0;
 inverse(X) ->
     1/X.
 
