@@ -278,8 +278,6 @@ ranks_of(Values) when is_list(Values) ->
                     end, [], Values),
     lists:reverse(L).
 
-ranks_of([E|Es],Acc, N, E, S) ->
-    ranks_of(Es, Acc, N+1, E, S);
 ranks_of([E|Es], Acc, N, P, S) ->
     ranks_of(Es,[{P,(S+N-1)/2}|Acc], N+1, E, N);
 ranks_of([],  Acc, N, P, S) ->
