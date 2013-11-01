@@ -173,6 +173,11 @@ get_pearson_correlation_test() ->
     ?assertEqual(1.0, bear:get_pearson_correlation(lists:seq(0,10), lists:seq(5,15))),
     ?assertEqual(1.0, bear:get_pearson_correlation(lists:seq(40,60,2), lists:seq(10,20))).
 
+get_pearson_correlation_nullresult_test() ->
+    %% The two series do not correlate
+    A = [-1,-0.5,0,0.5,1],
+    B = [1,0.25,0,0.25,1],
+    ?assertEqual(0.0, bear:get_pearson_correlation(A, B)).
 
 round_bin_test() ->
     ?assertEqual(10, bear:round_bin(10)),
