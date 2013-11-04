@@ -41,32 +41,7 @@
 
 -compile([native]).
 
-get_statistics(Values) when length(Values) < ?STATS_MIN ->
-    [
-     {min, 0.0},
-     {max, 0.0},
-     {arithmetic_mean, 0.0},
-     {geometric_mean, 0.0},
-     {harmonic_mean, 0.0},
-     {median, 0.0},
-     {variance, 0.0},
-     {standard_deviation, 0.0},
-     {skewness, 0.0},
-     {kurtosis, 0.0},
-     {percentile,
-      [
-       {50, 0.0},
-       {75, 0.0},
-       {90, 0.0},
-       {95, 0.0},
-       {99, 0.0},
-       {999, 0.0}
-      ]
-     },
-     {histogram, [{0, 0}]},
-     {n, 0}
-     ];
-get_statistics(Values) ->
+get_statistics([_,_,_,_,_|_] = Values) ->
     Scan_res = scan_values(Values),
     Scan_res2 = scan_values2(Values, Scan_res),
     Variance = variance(Scan_res, Scan_res2),
@@ -94,7 +69,86 @@ get_statistics(Values) ->
      },
      {histogram, get_histogram(Values, Scan_res, Scan_res2)},
      {n, Scan_res#scan_result.n}
-     ].
+    ];
+get_statistics(Values) when is_list(Values) ->
+    [
+     {min, 0.0},
+     {max, 0.0},
+     {arithmetic_mean, 0.0},
+     {geometric_mean, 0.0},
+     {harmonic_mean, 0.0},
+     {median, 0.0},
+     {variance, 0.0},
+     {standard_deviation, 0.0},
+     {skewness, 0.0},
+     {kurtosis, 0.0},
+     {percentile,
+      [
+       {50, 0.0},
+       {75, 0.0},
+       {90, 0.0},
+       {95, 0.0},
+       {99, 0.0},
+       {999, 0.0}
+      ]
+     },
+     {histogram, [{0, 0}]},
+     {n, 0}
+    ].
+
+get_statistics_subset(Values, Items) ->
+    Length = length(Values),
+    if Length < ?STATS_MIN ->
+	    [I || {K,_} = I <- get_statistics([]),
+		  lists:member(K, Items) orelse K==percentiles];
+       true ->
+	    SortedValues = lists:sort(Values),
+	    Steps = calc_steps(Items),
+	    Scan_res = if Steps > 1 -> scan_values(Values);
+			  true -> []
+		       end,
+	    Scan_res2 = if Steps > 2 -> scan_values2(Values, Scan_res);
+			   true -> []
+			end,
+	    report_subset(Items, Length,
+			  SortedValues, Scan_res, Scan_res2)
+    end.
+
+calc_steps(Items) ->
+    lists:foldl(fun({I,_},Acc) ->
+			erlang:max(level(I), Acc);
+		   (I,Acc) ->
+			erlang:max(level(I), Acc)
+		end, 1, Items).
+
+level(standard_deviation) -> 3;
+level(variance          ) -> 3;
+level(skewness          ) -> 3;
+level(kurtosis          ) -> 3;
+level(histogram         ) -> 3;
+level(arithmetic_mean   ) -> 2;
+level(geometric_mean    ) -> 2;
+level(harmonic_mean     ) -> 2;
+level(_) -> 1.
+
+report_subset(Items, N, SortedValues, Scan_res, Scan_res2) ->
+    lists:map(
+      fun(min) -> {min, hd(SortedValues)};
+	 (max) -> {max, lists:last(SortedValues)};
+	 (arithmetic_mean) -> {arithmetic_mean, arithmetic_mean(Scan_res)};
+	 (harmonic_mean) -> {harmonic_mean, harmonic_mean(Scan_res)};
+	 (geometric_mean) -> {geometric_mean, geometric_mean(Scan_res)};
+	 (median) -> {median, percentile(SortedValues,
+					 #scan_result{n = N}, 0.5)};
+	 (variance) -> {variance, variance(Scan_res, Scan_res2)};
+	 (standard_deviation=I) -> {I, std_deviation(Scan_res, Scan_res2)};
+	 (skewness) -> {skewness, skewness(Scan_res, Scan_res2)};
+	 (kurtosis) -> {kurtosis, kurtosis(Scan_res, Scan_res2)};
+	 ({percentile,Ps}) -> {percentile, percentiles(Ps, N, SortedValues)};
+	 (histogram) ->
+	      {histogram, get_histogram(SortedValues, Scan_res, Scan_res2)};
+	 (n) -> {n, N}
+      end, Items).
 
 get_statistics(Values, _) when length(Values) < ?STATS_MIN ->
     0.0;
@@ -445,4 +499,37 @@ tied_rank_worker([Item|Remainder], Work, PrevValue) ->
 
             end
     end.
+
+
+percentiles(Ps, N, Values) ->
+    Items = [{P, perc(P, N)} || P <- Ps],
+    pick_items(Values, 1, Items).
+
+pick_items([H|_] = L, P, [{Tag,P}|Ps]) ->
+    [{Tag,H} | pick_items(L, P, Ps)];
+pick_items([_|T], P, Ps) ->
+    pick_items(T, P+1, Ps);
+pick_items([], _, Ps) ->
+    [{Tag,undefined} || {Tag,_} <- Ps].
+
+perc(P, Len) when is_integer(P), 0 =< P, P =< 100 ->
+    V = round(P * Len / 100),
+    erlang:max(1, V);
+perc(P, Len) when is_integer(P), 100 =< P, P =< 1000 ->
+    V = round(P * Len / 1000),
+    erlang:max(1, V);
+perc(P, Len) when is_float(P), 0 =< P, P =< 1 ->
+    erlang:max(1, round(P * Len)).
+
+
+test_values() ->
+    [1,1,1,1,1,1,1,
+     2,2,2,2,2,2,2,
+     3,3,3,3,3,3,3,3,3,3,3,3,3,3,
+     4,4,4,4,4,4,4,4,4,4,4,4,4,4,
+     5,5,5,5,5,5,5,5,5,5,5,5,5,5,
+     6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
+     7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+     8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
+     9,9,9,9,9,9,9].
 

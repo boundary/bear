@@ -235,3 +235,28 @@ tied_rank_worker_test() ->
     ?assertEqual([{2.0,5},{2.0,5},{2.0,5},{2.0,5}], bear:tied_rank_worker([], [{2.0,5}], {[1,2,3], 5})),
     ?assertEqual([{2.0,5},{2.0,5},{2.0,5},{2.0,5},{2.0,5},{2.0,5}],
                  bear:tied_rank_worker([{2.0,5},{2.0,5}], [{2.0,5}], {[1,2,3], 5})).
+
+subset_test() ->
+    Stats = bear:get_statistics(bear:test_values()),
+    match_values(Stats).
+
+full_subset_test() ->
+    Stats = bear:get_statistics(bear:test_values()),
+    match_values2(Stats).
+
+match_values([H|T]) ->
+    Res = bear:get_statistics_subset(bear:test_values(), [mk_item(H)]),
+    Res = [H],
+    match_values(T);
+match_values([]) ->
+    ok.
+
+mk_item({percentile, Ps}) ->
+    {percentile, [P || {P,_} <- Ps]};
+mk_item({K, _}) ->
+    K.
+
+match_values2(Stats) ->
+    Items = [mk_item(I) || I <- Stats],
+    Stats = bear:get_statistics_subset(bear:test_values(), Items),
+    ok.
