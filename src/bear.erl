@@ -96,7 +96,7 @@ get_statistics(Values) when is_list(Values) ->
      {n, 0}
     ].
 
-get_statistics_subset(Values, Items) ->
+get_statistics_subset([_,_,_,_,_|_] = Values, Items) ->
     Length = length(Values),
     if Length < ?STATS_MIN ->
 	    [I || {K,_} = I <- get_statistics([]),
@@ -112,7 +112,9 @@ get_statistics_subset(Values, Items) ->
 			end,
 	    report_subset(Items, Length,
 			  SortedValues, Scan_res, Scan_res2)
-    end.
+    end;
+get_statistics_subset(Values, Items) when is_list(Values) ->
+    [{Item, 0.0} || Item <- Items].
 
 calc_steps(Items) ->
     lists:foldl(fun({I,_},Acc) ->
