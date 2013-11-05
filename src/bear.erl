@@ -134,20 +134,20 @@ level(_) -> 1.
 report_subset(Items, N, SortedValues, Scan_res, Scan_res2) ->
     lists:map(
       fun(min) -> {min, hd(SortedValues)};
-	 (max) -> {max, lists:last(SortedValues)};
-	 (arithmetic_mean) -> {arithmetic_mean, arithmetic_mean(Scan_res)};
-	 (harmonic_mean) -> {harmonic_mean, harmonic_mean(Scan_res)};
-	 (geometric_mean) -> {geometric_mean, geometric_mean(Scan_res)};
-	 (median) -> {median, percentile(SortedValues,
-					 #scan_result{n = N}, 0.5)};
-	 (variance) -> {variance, variance(Scan_res, Scan_res2)};
-	 (standard_deviation=I) -> {I, std_deviation(Scan_res, Scan_res2)};
-	 (skewness) -> {skewness, skewness(Scan_res, Scan_res2)};
-	 (kurtosis) -> {kurtosis, kurtosis(Scan_res, Scan_res2)};
-	 ({percentile,Ps}) -> {percentile, percentiles(Ps, N, SortedValues)};
-	 (histogram) ->
-	      {histogram, get_histogram(SortedValues, Scan_res, Scan_res2)};
-	 (n) -> {n, N}
+         (max) -> {max, lists:last(SortedValues)};
+         (arithmetic_mean) -> {arithmetic_mean, arithmetic_mean(Scan_res)};
+         (harmonic_mean) -> {harmonic_mean, harmonic_mean(Scan_res)};
+         (geometric_mean) -> {geometric_mean, geometric_mean(Scan_res)};
+         (median) -> {median, percentile(SortedValues,
+                                         #scan_result{n = N}, 0.5)};
+         (variance) -> {variance, variance(Scan_res, Scan_res2)};
+         (standard_deviation=I) -> {I, std_deviation(Scan_res, Scan_res2)};
+         (skewness) -> {skewness, skewness(Scan_res, Scan_res2)};
+         (kurtosis) -> {kurtosis, kurtosis(Scan_res, Scan_res2)};
+         ({percentile,Ps}) -> {percentile, percentiles(Ps, N, SortedValues)};
+         (histogram) ->
+              {histogram, get_histogram(SortedValues, Scan_res, Scan_res2)};
+         (n) -> {n, N}
       end, Items).
 
 get_statistics(Values, _) when length(Values) < ?STATS_MIN ->
@@ -532,4 +532,3 @@ test_values() ->
      7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
      8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
      9,9,9,9,9,9,9].
-
