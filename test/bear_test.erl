@@ -244,6 +244,16 @@ full_subset_test() ->
     Stats = bear:get_statistics(bear:test_values()),
     match_values2(Stats).
 
+negative_test() ->
+    %% make sure things don't blow up with a negative value
+    Values = [1,-1,-2,3,3,4,5,6,7],
+    [{min, -2}] = bear:get_statistics_subset(Values, [min]).
+
+negative2_test() ->
+    %% make sure things don't blow up with a negative value
+    Values = [-1,-1,-2,-2,-3,-5,-6,-10],
+    [{min, -10}] = bear:get_statistics_subset(Values, [min]).
+
 match_values([H|T]) ->
     Res = bear:get_statistics_subset(bear:test_values(), [mk_item(H)]),
     Res = [H],

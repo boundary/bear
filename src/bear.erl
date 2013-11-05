@@ -373,6 +373,8 @@ math_log(0) ->
     1;
 math_log(0.0) ->
     1.0;
+math_log(X) when X < 0 ->
+    0; % it's not possible to take a log of a negative number, return 0
 math_log(X) ->
     math:log(X).
 
