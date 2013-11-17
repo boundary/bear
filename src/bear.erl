@@ -98,21 +98,15 @@ get_statistics(Values) when is_list(Values) ->
 
 get_statistics_subset([_,_,_,_,_|_] = Values, Items) ->
     Length = length(Values),
-    if Length < ?STATS_MIN ->
-	    [I || {K,_} = I <- get_statistics([]),
-		  lists:member(K, Items) orelse K==percentiles];
-       true ->
-	    SortedValues = lists:sort(Values),
-	    Steps = calc_steps(Items),
-	    Scan_res = if Steps > 1 -> scan_values(Values);
-			  true -> []
-		       end,
-	    Scan_res2 = if Steps > 2 -> scan_values2(Values, Scan_res);
-			   true -> []
-			end,
-	    report_subset(Items, Length,
-			  SortedValues, Scan_res, Scan_res2)
-    end;
+    SortedValues = lists:sort(Values),
+    Steps = calc_steps(Items),
+    Scan_res = if Steps > 1 -> scan_values(Values);
+        true -> []
+    end,
+    Scan_res2 = if Steps > 2 -> scan_values2(Values, Scan_res);
+        true -> []
+    end,
+    report_subset(Items, Length, SortedValues, Scan_res, Scan_res2);
 get_statistics_subset(Values, Items) when is_list(Values) ->
     get_null_statistics_subset(Items, []).
 
