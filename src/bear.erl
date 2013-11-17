@@ -114,7 +114,14 @@ get_statistics_subset([_,_,_,_,_|_] = Values, Items) ->
 			  SortedValues, Scan_res, Scan_res2)
     end;
 get_statistics_subset(Values, Items) when is_list(Values) ->
-    [{Item, 0.0} || Item <- Items].
+    get_null_statistics_subset(Items, []).
+
+get_null_statistics_subset([{percentile, Ps}|Items], Acc) ->
+    get_null_statistics_subset(Items, [{percentile, [{P, 0.0} || P <- Ps]}|Acc]);
+get_null_statistics_subset([I|Items], Acc) ->
+    get_null_statistics_subset(Items, [{I, 0.0}|Acc]);
+get_null_statistics_subset([], Acc) ->
+    lists:reverse(Acc).
 
 calc_steps(Items) ->
     lists:foldl(fun({I,_},Acc) ->
