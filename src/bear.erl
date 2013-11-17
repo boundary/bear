@@ -118,11 +118,12 @@ get_null_statistics_subset([], Acc) ->
     lists:reverse(Acc).
 
 calc_steps(Items) ->
-    lists:foldl(fun({I,_},Acc) ->
-			erlang:max(level(I), Acc);
-		   (I,Acc) ->
-			erlang:max(level(I), Acc)
-		end, 1, Items).
+    lists:foldl(
+        fun({I,_},Acc) ->
+            erlang:max(level(I), Acc);
+           (I,Acc) ->
+            erlang:max(level(I), Acc)
+    end, 1, Items).
 
 level(standard_deviation) -> 3;
 level(variance          ) -> 3;
