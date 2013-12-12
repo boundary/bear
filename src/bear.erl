@@ -98,30 +98,32 @@ get_statistics(Values) when is_list(Values) ->
 
 get_statistics_subset([_,_,_,_,_|_] = Values, Items) ->
     Length = length(Values),
-    if Length < ?STATS_MIN ->
-	    [I || {K,_} = I <- get_statistics([]),
-		  lists:member(K, Items) orelse K==percentiles];
-       true ->
-	    SortedValues = lists:sort(Values),
-	    Steps = calc_steps(Items),
-	    Scan_res = if Steps > 1 -> scan_values(Values);
-			  true -> []
-		       end,
-	    Scan_res2 = if Steps > 2 -> scan_values2(Values, Scan_res);
-			   true -> []
-			end,
-	    report_subset(Items, Length,
-			  SortedValues, Scan_res, Scan_res2)
-    end;
+    SortedValues = lists:sort(Values),
+    Steps = calc_steps(Items),
+    Scan_res = if Steps > 1 -> scan_values(Values);
+        true -> []
+    end,
+    Scan_res2 = if Steps > 2 -> scan_values2(Values, Scan_res);
+        true -> []
+    end,
+    report_subset(Items, Length, SortedValues, Scan_res, Scan_res2);
 get_statistics_subset(Values, Items) when is_list(Values) ->
-    [{Item, 0.0} || Item <- Items].
+    get_null_statistics_subset(Items, []).
+
+get_null_statistics_subset([{percentile, Ps}|Items], Acc) ->
+    get_null_statistics_subset(Items, [{percentile, [{P, 0.0} || P <- Ps]}|Acc]);
+get_null_statistics_subset([I|Items], Acc) ->
+    get_null_statistics_subset(Items, [{I, 0.0}|Acc]);
+get_null_statistics_subset([], Acc) ->
+    lists:reverse(Acc).
 
 calc_steps(Items) ->
-    lists:foldl(fun({I,_},Acc) ->
-			erlang:max(level(I), Acc);
-		   (I,Acc) ->
-			erlang:max(level(I), Acc)
-		end, 1, Items).
+    lists:foldl(
+        fun({I,_},Acc) ->
+            erlang:max(level(I), Acc);
+           (I,Acc) ->
+            erlang:max(level(I), Acc)
+    end, 1, Items).
 
 level(standard_deviation) -> 3;
 level(variance          ) -> 3;
