@@ -208,7 +208,8 @@ arithmetic_mean(#scan_result{n=N, sumX=Sum}) ->
 geometric_mean(#scan_result{n=N, sumLog=SumLog}) ->
     math:exp(SumLog/N).
 
-harmonic_mean(#scan_result{sumInv=0}) ->
+harmonic_mean(#scan_result{sumInv=Zero}) when Zero =:= 0 orelse
+                                              Zero =:= 0.0 ->
     %% Protect against divide by 0 if we have all 0 values
     0;
 harmonic_mean(#scan_result{n=N, sumInv=Sum}) ->
