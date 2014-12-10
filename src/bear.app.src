@@ -4,5 +4,6 @@
   {vsn, git},
   {registered, []},
   {applications, []},
-  {env, []}
+  {env, []},
+  {modules, []}
  ]}.
